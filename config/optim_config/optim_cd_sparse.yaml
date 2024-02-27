@@ -1,19 +1,22 @@
-# Copyright (c) 2010-2022, InterDigital
-# All rights reserved. 
+#配置优化器的参数，包括学习率、优化器参数、学习率调度参数、损失函数参数以及梯度裁剪的最大范数
+# 版权所有 (c) 2010-2022，InterDigital
+# 保留所有权利。
 
-# See LICENSE under the root folder.
+# 请参阅根文件夹下的LICENSE。
 
-
-# Optimization configuration
+# 优化配置
 
 ---
-n_epoch: 50
-main_args:
-    lr: 0.0008
-    opt_args: [0.9, 0.999, 0]
-    schedule_args: ['step', 10, 0.5]
-loss_args:
-    loss: cd_sparse
-    alpha: 5
-    beta: 1
-clip_max_norm: -1
+n_epoch: 50  # 训练的总轮数为50轮
+
+main_args:  # 主要参数
+    lr: 0.0008  # 学习率为0.0008
+    opt_args: [0.9, 0.999, 0]  # 优化器参数，可能是动量、beta1、beta2等
+    schedule_args: ['step', 10, 0.5]  # 学习率调度参数，表示每10步学习率衰减为原来的0.5倍
+
+loss_args:  # 损失函数参数
+    loss: cd_sparse  # 损失函数类型为 'cd_sparse'
+    alpha: 5  # alpha参数为5
+    beta: 1  # beta参数为1
+
+clip_max_norm: -1  # 梯度裁剪的最大范数为-1，表示不进行梯度裁剪
