@@ -1,38 +1,37 @@
-# Copyright (c) 2010-2022, InterDigital
-# All rights reserved. 
+# 版权所有 (c) 2010-2022，InterDigital
+# 保留所有权利。
 
-# See LICENSE under the root folder.
+# 请参阅根文件夹下的LICENSE。
 
+# 配置ModelNet数据集以加载为稀疏体素
 
-# Configure the ModelNet dataset for loading as sparse voxels
+# 数据集的常见选项
+dataset: modelnet_simple  # 数据集的名称为 'modelnet_simple'
+num_points: 400000  # 点云的数量为400000
+coord_min: 0  # 坐标的最小值为0
+coord_max: 127  # 坐标的最大值为127
+voxelize: True  # 将数据体素化
+sparse_collate: True  # 使用稀疏的整理方式
+centralize: True  # 将数据集中化
+use_cache: 'modelnet/modelnet_voxel_127.pkl'  # 使用缓存文件 'modelnet/modelnet_voxel_127.pkl'
 
-# Common options of the dataset
-dataset: modelnet_simple
-num_points: 400000
-coord_min: 0
-coord_max: 127
-voxelize: True
-sparse_collate: True
-centralize: True
-use_cache: 'modelnet/modelnet_voxel_127.pkl'
-
-# Options under individual configurations
+# 各个配置下的选项
 train_cfg:
-    batch_size: 8
-    shuffle: True
-    num_workers: 4
-    augmentation: True
-    split: train
+    batch_size: 8  # 训练集的批处理大小为8
+    shuffle: True  # 对训练集进行洗牌
+    num_workers: 4  # 使用4个工作进程加载数据
+    augmentation: True  # 对训练集进行数据增强
+    split: train  # 这是训练集的配置
 val_cfg:
-    batch_size: 8
-    shuffle: False
-    num_workers: 1
-    augmentation: False
-    split: val
+    batch_size: 8  # 验证集的批处理大小为8
+    shuffle: False  # 不对验证集进行洗牌
+    num_workers: 1  # 使用1个工作进程加载数据
+    augmentation: False  # 不对验证集进行数据增强
+    split: val  # 这是验证集的配置
 test_cfg:
-    batch_size: 1
-    num_points: null
-    shuffle: False
-    num_workers: 1
-    augmentation: False
-    split: test
+    batch_size: 1  # 测试集的批处理大小为1
+    num_points: null  # 测试集的点云数量为null，表示使用默认值
+    shuffle: False  # 不对测试集进行洗牌
+    num_workers: 1  # 使用1个工作进程加载数据
+    augmentation: False  # 不对测试集进行数据增强
+    split: test  # 这是测试集的配置
