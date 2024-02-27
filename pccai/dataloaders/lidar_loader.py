@@ -15,46 +15,45 @@ from pccai.utils.convert_octree import OctreeOrganizer
 from pccai.dataloaders.lidar_base_loader import FordBase, KITTIBase, QnxadasBase
 
 
-def get_base_lidar_dataset(data_config, sele_config):
-    if data_config['dataset'].lower().find('ford') >= 0:
-        loader_class = FordBase
-    elif data_config['dataset'].lower().find('kitti') >= 0:
-        loader_class = KITTIBase
-    elif data_config['dataset'].lower().find('qnxadas') >= 0:
-        loader_class = QnxadasBase
+def get_base_lidar_dataset(data_config, sele_config):  # 定义一个函数，用于获取基础LiDAR数据集
+    if data_config['dataset'].lower().find('ford') >= 0:  # 如果数据配置中的数据集名称包含'ford'
+        loader_class = FordBase  # 使用FordBase类
+    elif data_config['dataset'].lower().find('kitti') >= 0:  # 如果数据配置中的数据集名称包含'kitti'
+        loader_class = KITTIBase  # 使用KITTIBase类
+    elif data_config['dataset'].lower().find('qnxadas') >= 0:  # 如果数据配置中的数据集名称包含'qnxadas'
+        loader_class = QnxadasBase  # 使用QnxadasBase类
     else:
-        loader_class = None
-    return loader_class(data_config, sele_config)
+        loader_class = None  # 如果数据配置中的数据集名称既不包含'ford'，也不包含'kitti'，也不包含'qnxadas'，则设置loader_class为None
+    return loader_class(data_config, sele_config)  # 返回loader_class的实例
 
 
-class LidarSimple(data.Dataset):
+class LidarSimple(data.Dataset):  # 定义一个名为LidarSimple的类，该类继承自data.Dataset类 用于处理LiDAR数据集，它返回每个点云中指定数量的3D点
     """A simple LiDAR dataset which returns a specified number of 3D points in each point cloud."""
 
-    def __init__(self, data_config, sele_config, **kwargs):
+    def __init__(self, data_config, sele_config, **kwargs):  # 类的初始化方法
 
-        self.point_cloud_dataset = get_base_lidar_dataset(data_config, sele_config)
-        self.num_points = data_config.get('num_points', 150000) # about 150000 points per point cloud
-        self.seed = data_config.get('seed', None)
-        self.sparse_collate = data_config.get('sparse_collate', False)
-        self.voxelize = data_config.get('voxelize', False)
+        self.point_cloud_dataset = get_base_lidar_dataset(data_config, sele_config)  # 获取基础LiDAR数据集
+        self.num_points = data_config.get('num_points', 150000)  # 从数据配置中获取num_points参数，如果没有找到，则默认为150000
+        self.seed = data_config.get('seed', None)  # 从数据配置中获取seed参数，如果没有找到，则默认为None
+        self.sparse_collate = data_config.get('sparse_collate', False)  # 从数据配置中获取sparse_collate参数，如果没有找到，则默认为False
+        self.voxelize = data_config.get('voxelize', False)  # 从数据配置中获取voxelize参数，如果没有找到，则默认为False
 
-    def __len__(self):
-        return len(self.point_cloud_dataset)
+    def __len__(self):  # 定义一个方法，用于返回样本的总数
+        return len(self.point_cloud_dataset)  # 返回点云数据集的长度
     
-    def __getitem__(self, index):
-        pc = self.point_cloud_dataset[index]['pc'] # take out the point cloud coordinates only
-        np.random.seed(self.seed)
-        if self.voxelize:
-            pc = np.round(pc[:self.num_points, :]).astype('int32') # always <= num_points
-            # This is to facilitate the sparse tensor construction with Minkowski Engine
-            if self.sparse_collate:
-                pc = np.hstack((np.zeros((pc.shape[0], 1), dtype='int32'), pc))
-                # pc = np.vstack((pc, np.ones((self.num_points - pc.shape[0], 4), dtype='int32') * -1))
-                pc[0][0] = 1
-            return pc
+    def __getitem__(self, index):  # 定义一个方法，用于获取指定索引的样本
+        pc = self.point_cloud_dataset[index]['pc']  # 获取点云数据集中指定索引的点云坐标
+        np.random.seed(self.seed)  # 设置随机数种子
+        if self.voxelize:  # 如果voxelize参数为True
+            pc = np.round(pc[:self.num_points, :]).astype('int32')  # 对点云数据进行四舍五入，并转换为整型
+            # 这是为了方便使用Minkowski Engine进行稀疏张量的构造
+            if self.sparse_collate:  # 如果sparse_collate参数为True
+                pc = np.hstack((np.zeros((pc.shape[0], 1), dtype='int32'), pc))  # 将点云数据和全为0的数组进行水平堆叠
+                pc[0][0] = 1  # 将第一个元素设置为1
+            return pc  # 返回点云数据
         else:
-            choice = np.random.choice(pc.shape[0], self.num_points, replace=True) # always == num_points
-            return pc[choice, :].astype(dtype=np.float32)
+            choice = np.random.choice(pc.shape[0], self.num_points, replace=True)  # 从点云数据中随机选择num_points个点
+            return pc[choice, :].astype(dtype=np.float32)  # 返回选择的点云数据，并将其转换为浮点型
 
 class LidarSpherical(data.Dataset):
     """Converts the original Cartesian coordinate to spherical coordinate then represent as 2D images."""
