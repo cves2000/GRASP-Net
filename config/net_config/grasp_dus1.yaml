@@ -1,24 +1,25 @@
-# network configuration for GRASP-Net, down-up scale 1
+# GRASP-Net网络配置，下上比例为1
 
 ---
-architecture: grasp
-modules:
-    dus: 1
-    entropy_bottleneck: 8
-    scaling_ratio: -1 # key param
-    point_mul: -1 # key param
-    skip_mode: -1 # key param
-    noise: 0.125
-    res_enc:
-        model: point_res_enc
-        mlp_dims: [3, 16, 32, 64, 64, 128]
-        fc_dims: [128, 64, 16]
-    vox_enc:
-        model: spcnn_down
-        dims: [16, 32, 8]
-    vox_dec:
-        model: spcnn_up
-        dims: [8, 64]
-    res_dec:
-        model: mlpdecoder_sparse
-        dims: [-1, 128, 128, 64]
+architecture: grasp  # 网络架构为 'grasp'
+
+modules:  # 模块配置
+    dus: 1  # 下上比例为1
+    entropy_bottleneck: 8  # 熵瓶颈为8
+    scaling_ratio: -1  # 缩放比例为-1，这是一个关键参数
+    point_mul: -1  # 点乘为-1，这是一个关键参数
+    skip_mode: -1  # 跳过模式为-1，这是一个关键参数
+    noise: 0.125  # 噪声为0.125
+    res_enc:  # 残差编码器配置
+        model: point_res_enc  # 模型为 'point_res_enc'
+        mlp_dims: [3, 16, 32, 64, 64, 128]  # MLP维度为 [3, 16, 32, 64, 64, 128]
+        fc_dims: [128, 64, 16]  # 全连接层维度为 [128, 64, 16]
+    vox_enc:  # 体素编码器配置
+        model: spcnn_down  # 模型为 'spcnn_down'
+        dims: [16, 32, 8]  # 维度为 [16, 32, 8]
+    vox_dec:  # 体素解码器配置
+        model: spcnn_up  # 模型为 'spcnn_up'
+        dims: [8, 64]  # 维度为 [8, 64]
+    res_dec:  # 残差解码器配置
+        model: mlpdecoder_sparse  # 模型为 'mlpdecoder_sparse'
+        dims: [-1, 128, 128, 64]  # 维度为 [-1, 128, 128, 64]
