@@ -1,44 +1,43 @@
-# Copyright (c) 2010-2022, InterDigital
-# All rights reserved. 
+# 版权所有 (c) 2010-2022，InterDigital
+# 保留所有权利。
 
-# See LICENSE under the root folder.
+# 请参阅根文件夹下的LICENSE。
 
+# 配置Ford数据集以加载为稀疏体素
 
-# Configure the Ford dataset for loading as sparse voxels
+# 数据集的常见选项
+dataset: ford_simple  # 数据集的名称为 'ford_simple'
+num_points: 150000  # 点云的数量为150000
+translate: [131072, 131072, 131072]  # 在x、y、z三个方向上的平移量都为131072
+scale: 1  # 数据在所有方向上的缩放比例为1
+voxelize: True  # 将数据体素化
+sparse_collate: True  # 使用稀疏的整理方式
+return_intensity: False  # 不返回强度值
 
-# Common options of the dataset
-dataset: ford_simple
-num_points: 150000 # for point clouds in folder 0 - 10, at least have 82602 points, at most have 129392 points
-translate: [131072, 131072, 131072]
-scale: 1
-voxelize: True
-sparse_collate: True
-return_intensity: False
-
-# Options on the splitting scheme
+# 分割方案的选项
 splitting:
     train:
-        - 1
+        - 1  # 训练集包含第1个文件夹
     test:
-        - 2
+        - 2  # 测试集包含第2个和第3个文件夹
         - 3
 
-# Options under individual configurations
+# 各个配置下的选项
 train_cfg:
-    batch_size: 2
-    shuffle: True
-    num_workers: 4
-    augmentation: True
-    split: train
+    batch_size: 2  # 训练集的批处理大小为2
+    shuffle: True  # 对训练集进行洗牌
+    num_workers: 4  # 使用4个工作进程加载数据
+    augmentation: True  # 对训练集进行数据增强
+    split: train  # 这是训练集的配置
 val_cfg:
-    batch_size: 4
-    shuffle: False
-    num_workers: 4
-    augmentation: True
-    split: val
+    batch_size: 4  # 验证集的批处理大小为4
+    shuffle: False  # 不对验证集进行洗牌
+    num_workers: 4  # 使用4个工作进程加载数据
+    augmentation: True  # 对验证集进行数据增强
+    split: val  # 这是验证集的配置
 test_cfg:
-    batch_size: 4
-    shuffle: False
-    num_workers: 4
-    augmentation: False
-    split: test
+    batch_size: 4  # 测试集的批处理大小为4
+    shuffle: False  # 不对测试集进行洗牌
+    num_workers: 4  # 使用4个工作进程加载数据
+    augmentation: False  # 不对测试集进行数据增强
+    split: test  # 这是测试集的配置
