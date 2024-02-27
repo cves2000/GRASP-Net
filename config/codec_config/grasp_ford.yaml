@@ -1,5 +1,5 @@
-# Configure the encoder/decoder for actual compression/decompression
-
+# Configure the encoder/decoder for actual compression/decompression 
+#配置3D点云数据的编解码器，以及数据的平移和缩放参数
 # Codec class
 codec: 'grasp_codec'
 
