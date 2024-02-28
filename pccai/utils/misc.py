@@ -1,64 +1,33 @@
-# Copyright (c) 2010-2022, InterDigital
-# All rights reserved. 
+import numpy as np  # 导入NumPy库
+import pccai.utils.logger as logger  # 导入pccai.utils.logger作为logger
+from plyfile import PlyData, PlyElement  # 从plyfile导入PlyData和PlyElement
 
-# See LICENSE under the root folder.
+def pc_write(pc, file_name):  # 定义写点云的函数
+    pc_np = pc.T.cpu().numpy()  # 将点云转换为NumPy数组
+    vertex = list(zip(pc_np[0], pc_np[1], pc_np[2]))  # 创建顶点列表
+    vertex = np.array(vertex, dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])  # 将顶点列表转换为NumPy数组
+    elements = PlyElement.describe(vertex, "vertex")  # 描述元素
+    PlyData([elements]).write(file_name)  # 写入文件
+    return  # 返回
 
+def pc_read(filename):  # 定义读点云的函数
+    ply_raw = PlyData.read(filename)['vertex'].data  # 读取文件
+    pc = np.vstack((ply_raw['x'], ply_raw['y'], ply_raw['z'])).transpose()  # 创建点云
+    return np.ascontiguousarray(pc)  # 返回点云
 
-import numpy as np
-import pccai.utils.logger as logger
-from plyfile import PlyData, PlyElement
+def pt_to_np(tensor):  # 定义将PyTorch张量转换为NumPy数组的函数
+    """将PyTorch张量转换为NumPy数组。"""
 
-# # Abandon Open3D for simplification
-# import open3d as o3d
+    return tensor.contiguous().cpu().detach().numpy()  # 返回NumPy数组
 
-# def pc_read(file_name):
-#     return np.asarray(o3d.io.read_point_cloud(file_name).points)
+def load_state_dict_with_fallback(obj, dict):  # 定义加载检查点的函数
+    """使用回退加载检查点。"""
 
-# def pc_write(pc, file_name, coloring=None, normals=None):
-#     """Basic writing tool for point clouds."""
+    try:  # 尝试
+        obj.load_state_dict(dict)  # 加载检查点
+    except RuntimeError as e:  # 如果出现运行时错误
+        logger.log.exception(e)  # 记录异常
+        logger.log.info(f'Strict load_state_dict has failed. Attempting in non strict mode.')  # 记录信息
+        obj.load_state_dict(dict, strict=False)  # 以非严格模式加载检查点
 
-#     pc = pt_to_np(pc)
-#     pc_o3d = o3d.geometry.PointCloud()
-#     try:
-#         pc_o3d.points = o3d.utility.Vector3dVector(pc)
-#         if coloring is not None:
-#             pc_o3d.colors = o3d.utility.Vector3dVector(coloring)
-#         if normals is not None:
-#             pc_o3d.normals = o3d.utility.Vector3dVector(normals)
-#     except RuntimeError as e:
-#         logger.log.info(pc, coloring, normals)
-#         logger.log.info(type(pc), type(coloring), type(normals))
-#         raise e
-#     o3d.io.write_point_cloud(file_name, pc_o3d)
-
-
-def pc_write(pc, file_name):
-    pc_np = pc.T.cpu().numpy()
-    vertex = list(zip(pc_np[0], pc_np[1], pc_np[2]))
-    vertex = np.array(vertex, dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
-    elements = PlyElement.describe(vertex, "vertex")
-    PlyData([elements]).write(file_name)
-    return
-
-
-def pc_read(filename):
-    ply_raw = PlyData.read(filename)['vertex'].data
-    pc = np.vstack((ply_raw['x'], ply_raw['y'], ply_raw['z'])).transpose()
-    return np.ascontiguousarray(pc)
-
-
-def pt_to_np(tensor):
-    """Convert PyTorch tensor to NumPy array."""
-
-    return tensor.contiguous().cpu().detach().numpy()
-
-
-def load_state_dict_with_fallback(obj, dict):
-    """Load a checkpoint with fall back."""
-
-    try:
-        obj.load_state_dict(dict)
-    except RuntimeError as e:
-        logger.log.exception(e)
-        logger.log.info(f'Strict load_state_dict has failed. Attempting in non strict mode.')
-        obj.load_state_dict(dict, strict=False)
+#这段代码主要用于处理点云数据，包括读取点云数据、写入点云数据、将PyTorch张量转换为NumPy数组以及加载检查点。
