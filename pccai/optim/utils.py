@@ -1,33 +1,37 @@
 # Copyright (c) 2010-2022, InterDigital
+# 版权所有 (c) 2010-2022，InterDigital
 # All rights reserved. 
-
+# 保留所有权利。
 # See LICENSE under the root folder.
-
+# 请在根文件夹下查看LICENSE。
 
 # Utilities related to network optimization
+# 与网络优化相关的实用程序
 
-import torch
-import torch.optim as optim
+import torch  # 导入PyTorch库
+import torch.optim as optim  # 导入PyTorch优化库
 
 # Import all the loss classes to be used
-from pccai.optim.cd_sparse import ChamferDistSparse
-
+# 导入所有要使用的损失类
+from pccai.optim.cd_sparse import ChamferDistSparse  # 从pccai.optim.cd_sparse导入ChamferDistSparse
 
 # List the all the loss classes in the following dictionary 
+# 在以下字典中列出所有的损失类
 loss_classes = {
     'cd_sparse': ChamferDistSparse
 }
 
-def get_loss_class(loss_name):
-    loss = loss_classes.get(loss_name.lower(), None)
-    assert loss is not None, f'loss class "{loss_name}" not found, valid loss classes are: {list(loss_classes.keys())}'
-    return loss
+def get_loss_class(loss_name):  # 定义获取损失类的函数
+    loss = loss_classes.get(loss_name.lower(), None)  # 从损失类字典中获取指定的损失类
+    assert loss is not None, f'loss class "{loss_name}" not found, valid loss classes are: {list(loss_classes.keys())}'  # 如果没有找到指定的损失类，抛出断言错误
+    return loss  # 返回损失类
 
-
-def configure_optimization(pccnet, optim_config):
+def configure_optimization(pccnet, optim_config):  # 定义配置优化的函数
     """Configure the optimizers and the schedulers for training."""
+    # 配置训练的优化器和调度器
 
     # Separate parameters for the main optimizer and the auxiliary optimizer
+    # 为主优化器和辅助优化器分别设置参数
     parameters = set(
         n
         for n, p in pccnet.named_parameters()
@@ -40,6 +44,7 @@ def configure_optimization(pccnet, optim_config):
     )
 
     # Make sure we don't have an intersection of parameters
+    # 确保我们没有参数的交集
     params_dict = dict(pccnet.named_parameters())
     inter_params = parameters & aux_parameters
     union_params = parameters | aux_parameters
@@ -47,6 +52,7 @@ def configure_optimization(pccnet, optim_config):
     assert len(union_params) - len(params_dict.keys()) == 0
 
     # We only support the Adam optimizer to make things less complicated
+    # 我们只支持Adam优化器，以使事情变得不那么复杂
     optimizer = optim.Adam(
         (params_dict[n] for n in sorted(list(parameters))),
         lr=optim_config['main_args']['lr'],
@@ -64,6 +70,7 @@ def configure_optimization(pccnet, optim_config):
         scheduler = None
 
     # For the auxiliary parameters
+    # 对于辅助参数
     if len(aux_parameters) > 0:
         aux_optimizer = optim.Adam(
             (params_dict[n] for n in sorted(list(aux_parameters))),
@@ -84,3 +91,5 @@ def configure_optimization(pccnet, optim_config):
         aux_optimizer = aux_scheduler = None
 
     return optimizer, scheduler, aux_optimizer, aux_scheduler
+    # 这段代码主要用于配置网络优化的参数，包括优化器和调度器。其中，get_loss_class函数用于获取指定的损失类，configure_optimization函数用于配置优化参数，
+    # 包括主优化器和辅助优化器的参数，以及对应的调度器。
