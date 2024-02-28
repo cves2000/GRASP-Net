@@ -1,55 +1,54 @@
-# Copyright (c) 2010-2022, InterDigital
-# All rights reserved. 
+# 版权所有 (c) 2010-2022, InterDigital
+# 保留所有权利。
 
-# See LICENSE under the root folder.
+# 请参阅根文件夹下的LICENSE。
 
-
-# Train a point cloud compression model
+# 训练一个点云压缩模型
 
 import random
 import os
 import torch
 import sys
 import socket
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/..')
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/..')  # 将当前文件的父目录添加到系统路径
 
-# multi-processing utilities
+# 多进程工具
 import torch.multiprocessing as mp
 import torch.distributed as dist
 
-# Load different utilities from PccAI
+# 从PccAI加载不同的工具
 from pccai.utils.option_handler import TrainOptionHandler
 import pccai.utils.logger as logger
 from pccai.pipelines.train import *
 
 
 def setup(rank, world_size, master_address, master_port):
-    """Setup the DDP processes if necessary, each process will be allocated to one GPU."""
+    """如果需要，设置DDP进程，每个进程将被分配到一个GPU。"""
 
-    # Look for an available port first
+    # 首先寻找一个可用的端口
     tmp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while True:
         loc = (master_address, master_port)
         res = tmp_socket.connect_ex(loc)
-        if res != 0: break # found a port
+        if res != 0: break # 找到一个端口
         else: master_port += 1
 
-    # initialize the process group
+    # 初始化进程组
     os.environ['MASTER_PORT'] = str(master_port)
     os.environ['MASTER_ADDR'] = master_address
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
 def cleanup():
-    """Destropy all processes."""
+    """销毁所有进程。"""
 
     dist.destroy_process_group()
 
 
 def train_main(device, opt):
-    """Main training wrapper."""
+    """主训练包装器。"""
 
-    # Initialize a global logger then print out all the options
+    # 初始化一个全局日志记录器，然后打印出所有的选项
     logger.create_logger(opt.exp_folder, opt.log_file, opt.log_file_only)
     option_handler = TrainOptionHandler()
     option_handler.print_options(opt)
@@ -58,26 +57,28 @@ def train_main(device, opt):
     opt.device_count = torch.cuda.device_count()
     if opt.ddp: setup(device, opt.device_count, opt.master_address, opt.master_port)
 
-    # Go with the actual training
+    # 进行实际的训练
     if opt.seed is not None:
         torch.manual_seed(opt.seed)
         random.seed(opt.seed)
     avg_loss = train_pccnet(opt)
-    logger.log.info('Training session %s finished.\n' % opt.exp_name)
+    logger.log.info('训练会话 %s 已完成。\n' % opt.exp_name)
     logger.destroy_logger()
     if opt.ddp: cleanup()
 
 
 if __name__ == "__main__":
 
-    # Parse the options and perform training
+    # 解析选项并进行训练
     option_handler = TrainOptionHandler()
     opt = option_handler.parse_options()
 
-    # Create a folder to save the models and the log
+    # 创建一个文件夹来保存模型和日志
     if not os.path.exists(opt.exp_folder):
         os.makedirs(opt.exp_folder)
     if opt.ddp:
         mp.spawn(train_main, args=(opt,), nprocs=torch.cuda.device_count(), join=True)
     else:
         train_main(0, opt)
+# 这段代码主要用于训练一个点云压缩模型。其中，setup函数用于设置分布式数据并行（DDP）进程，
+# cleanup函数用于销毁所有进程，train_main函数是主训练包装器，它初始化一个全局日志记录器，打印出所有的选项，加载训练配置，设置设备，并进行实际的训练。
