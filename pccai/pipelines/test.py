@@ -1,3 +1,24 @@
+# Copyright (c) 2010-2022, InterDigital
+# All rights reserved. 
+
+# See LICENSE under the root folder.
+
+
+# Test the point cloud compression model, this is to verify the loss on the datasets but not for actual compression
+
+import time
+import os
+import yaml
+import torch
+import numpy as np
+
+# Load different utilities from PccAI
+from pccai.models import PccModelWithLoss
+from pccai.dataloaders.point_cloud_dataset import point_cloud_dataloader
+from pccai.utils.syntax import SyntaxGenerator
+from pccai.utils.misc import pc_write, load_state_dict_with_fallback
+import pccai.utils.logger as logger
+
 def test_one_epoch(pccnet, dataset, dataloader, syntax, gen_bitstream, print_freq, pc_write_freq, pc_write_prefix, exp_folder=None):
     """使用给定的模型、指定的损失函数和给定的数据集等测试一个时期。"""
 
